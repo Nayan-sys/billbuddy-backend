@@ -1,6 +1,7 @@
 services:
   - type: web
     name: billbuddy-backend
-    env: java
+    env: static
+    rootDir: bill-buddy-spring-boot-backend-main
     buildCommand: ./mvnw clean install
     startCommand: java -jar target/*.jar
