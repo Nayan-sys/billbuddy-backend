@@ -25,20 +25,15 @@ import lombok.AllArgsConstructor;
 public class UserController {
 
 	private UserDao userDao;
-
 	private HttpSession httpSession;
 
-	/**
-	 * User registration
-	 */
+	// User registration
 	@PostMapping(value = "/saveUser")
 	public User saveUserController(@RequestBody User user) {
 		return userDao.saveUserDao(user);
 	}
 
-	/**
-	 * User login
-	 */
+	// User login
 	@GetMapping(value = "/loginUser/{userEmail}/{userPass}")
 	public ResponseEntity<?> loginWithUserController(
 			@PathVariable String userEmail,
@@ -62,9 +57,7 @@ public class UserController {
 						"message", "Invalid Credentials"));
 	}
 
-	/**
-	 * User logout
-	 */
+	// User logout
 	@GetMapping(value = "/userLogout")
 	public ResponseEntity<?> userLogout() {
 
@@ -86,9 +79,7 @@ public class UserController {
 						"message", "User already logged out"));
 	}
 
-	/**
-	 * Total sum of logged-in user's items
-	 */
+	// Total sum of logged-in user's items
 	@GetMapping(value = "/getUserLoggedInAddedItemsSummation")
 	public ResponseEntity<?> getUserLoggedInAddedItemsSummation() {
 
@@ -113,9 +104,7 @@ public class UserController {
 						"message", "User not found. Please login first."));
 	}
 
-	/**
-	 * Get logged-in user details
-	 */
+	// Get logged-in user
 	@GetMapping(value = "/getUserName")
 	public User getUserNameController() {
 
