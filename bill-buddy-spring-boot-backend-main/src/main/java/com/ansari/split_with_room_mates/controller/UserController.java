@@ -2,7 +2,6 @@ package com.ansari.split_with_room_mates.controller;
 
 import java.util.Map;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,7 +19,7 @@ import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
 
 @RestController
-@CrossOrigin(value = "http://localhost:5173")
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 @RequestMapping(value = "/user")
 @AllArgsConstructor
 public class UserController {
@@ -29,43 +28,43 @@ public class UserController {
 
 	private HttpSession httpSession;
 
+	/**
+	 * User registration
+	 */
 	@PostMapping(value = "/saveUser")
 	public User saveUserController(@RequestBody User user) {
 		return userDao.saveUserDao(user);
 	}
 
+	/**
+	 * User login
+	 */
 	@GetMapping(value = "/loginUser/{userEmail}/{userPass}")
 	public ResponseEntity<?> loginWithUserController(
-			@PathVariable(name = "userEmail") String userEmail,
-			@PathVariable(name = "userPass") String userPass) {
+			@PathVariable String userEmail,
+			@PathVariable String userPass) {
 
-		try {
-			System.out.println("login user !!!");
-			System.out.println("Email: " + userEmail);
-			System.out.println("Password: " + userPass);
+		System.out.println("login user !!!");
 
-			User user = userDao.findByEmailDao(userEmail);
+		User user = userDao.findByEmailDao(userEmail);
 
-			System.out.println("User found: " + user);
+		if (user != null && user.getPassword().equals(userPass)) {
+			httpSession.setAttribute("userSession", user.getEmail());
 
-			if (user != null && user.getPassword().equals(userPass)) {
-
-				httpSession.setAttribute("userSession", user.getEmail());
-
-				return ResponseEntity.ok(
-						Map.of("message", "Login Success", "userEmail", user.getEmail()));
-			}
-
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-					.body("Invalid Credentials");
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.body("Server Error: " + e.getMessage());
+			return ResponseEntity.ok(
+					Map.of(
+							"message", "Login Success",
+							"userEmail", user.getEmail()));
 		}
+
+		return ResponseEntity.ok(
+				Map.of(
+						"message", "Invalid Credentials"));
 	}
 
+	/**
+	 * User logout
+	 */
 	@GetMapping(value = "/userLogout")
 	public ResponseEntity<?> userLogout() {
 
@@ -75,14 +74,21 @@ public class UserController {
 
 		if (email != null) {
 			httpSession.invalidate();
+
 			return ResponseEntity.ok(
-					Map.of("message", "Logout Success", "userEmail", email));
+					Map.of(
+							"message", "Logout Success",
+							"userEmail", email));
 		}
 
-		return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-				.body("user already logout");
+		return ResponseEntity.ok(
+				Map.of(
+						"message", "User already logged out"));
 	}
 
+	/**
+	 * Total sum of logged-in user's items
+	 */
 	@GetMapping(value = "/getUserLoggedInAddedItemsSummation")
 	public ResponseEntity<?> getUserLoggedInAddedItemsSummation() {
 
@@ -99,26 +105,24 @@ public class UserController {
 
 				return ResponseEntity.ok(
 						Map.of("totalSum", totalSum));
-			} else {
-				return ResponseEntity.ok(
-						Map.of("message",
-								"user not found because session is not working, please login then try"));
 			}
 		}
 
 		return ResponseEntity.ok(
-				Map.of("message",
-						"user not found because session is not working, please login then try"));
+				Map.of(
+						"message", "User not found. Please login first."));
 	}
 
+	/**
+	 * Get logged-in user details
+	 */
 	@GetMapping(value = "/getUserName")
 	public User getUserNameController() {
 
 		String email = (String) httpSession.getAttribute("userSession");
 
 		if (email != null) {
-			User user = userDao.findByEmailDao(email);
-			return user;
+			return userDao.findByEmailDao(email);
 		}
 
 		return null;
